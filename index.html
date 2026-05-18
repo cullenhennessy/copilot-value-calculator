@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copilot Value Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --blue: #1f6feb;
+      --purple: #8957e5;
+      --gold: #d29922;
+      --red: #da3633;
+      --green: #3fb950;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    header {
+      max-width: 960px;
+      margin: 0 auto 32px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+
+    header h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+    header p { color: var(--muted); font-size: 13px; }
+
+    .promo-badge {
+      display: inline-block;
+      background: rgba(210, 153, 34, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-top: 8px;
+    }
+
+    .layout { max-width: 960px; margin: 0 auto; display: grid; gap: 24px; }
+
+    /* ---- Inputs ---- */
+    .inputs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .inputs-row { grid-template-columns: 1fr; } }
+
+    .plan-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .plan-card.business { border-top: 3px solid var(--blue); }
+    .plan-card.enterprise { border-top: 3px solid var(--purple); }
+
+    .plan-card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .plan-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .plan-dot.business { background: var(--blue); }
+    .plan-dot.enterprise { background: var(--purple); }
+
+    .plan-meta { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+
+    input[type="number"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color .15s;
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type="number"]:focus { border-color: var(--blue); }
+    .plan-card.enterprise input[type="number"]:focus { border-color: var(--purple); }
+
+    .seat-price { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    /* ---- Summary cards ---- */
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 700px) { .summary-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .summary-grid { grid-template-columns: 1fr; } }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .metric-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+    .metric-row span:first-child { color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .metric-total {
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    /* ---- Value vs Cost panel ---- */
+    .value-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .value-panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .value-panel-header h3 { font-size: 14px; font-weight: 600; }
+
+    .value-table { width: 100%; border-collapse: collapse; }
+    .value-table th {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--muted);
+      padding: 10px 20px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    .value-table th:first-child { text-align: left; }
+    .value-table td {
+      padding: 12px 20px;
+      text-align: right;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    .value-table td:first-child { text-align: left; font-weight: 500; }
+    .value-table tr:last-child td { border-bottom: none; }
+    .value-table tr.total-row td { background: var(--surface2); font-weight: 700; font-size: 14px; }
+
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+    .highlight { color: var(--gold); font-weight: 700; }
+
+    /* ---- Overage section ---- */
+    .overage-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .overage-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .overage-section p { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+
+    .overage-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 500px) { .overage-inputs { grid-template-columns: 1fr; } }
+
+    .overage-result { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 500px) { .overage-result { grid-template-columns: 1fr; } }
+
+    .overage-stat { background: var(--surface2); border-radius: 6px; padding: 12px 14px; }
+    .overage-stat .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .overage-stat .val { font-size: 16px; font-weight: 700; }
+
+    /* ---- 3-month summary ---- */
+    .three-month {
+      background: rgba(210, 153, 34, 0.08);
+      border: 1px solid rgba(210, 153, 34, 0.3);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .three-month h3 { font-size: 14px; font-weight: 600; color: var(--gold); margin-bottom: 12px; }
+    .three-month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 680px) { .three-month-grid { grid-template-columns: 1fr 1fr; } }
+
+    .tm-stat { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 12px; }
+    .tm-stat .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .tm-stat .val { font-size: 15px; font-weight: 700; }
+
+    footer { max-width: 960px; margin: 24px auto 0; font-size: 11px; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Copilot Seat Value Calculator</h1>
+  <p>Model the cost and credit value of Copilot Business vs Enterprise seat allocations.</p>
+  <span class="promo-badge">3-Month Promotional Pricing</span>
+</header>
+
+<div class="layout">
+
+  <!-- Seat inputs -->
+  <div class="inputs-row">
+    <div class="plan-card business">
+      <h2><span class="plan-dot business"></span> Copilot Business</h2>
+      <p class="plan-meta">$19 / seat / mo &nbsp;&bull;&nbsp; 3,000 AI credits / seat</p>
+      <label for="biz-seats">Number of Seats</label>
+      <input type="number" id="biz-seats" value="100" min="0" step="1" />
+      <div class="seat-price">$19.00 per seat</div>
+    </div>
+    <div class="plan-card enterprise">
+      <h2><span class="plan-dot enterprise"></span> Copilot Enterprise</h2>
+      <p class="plan-meta">$39 / seat / mo &nbsp;&bull;&nbsp; 7,000 AI credits / seat</p>
+      <label for="ent-seats">Number of Seats</label>
+      <input type="number" id="ent-seats" value="50" min="0" step="1" />
+      <div class="seat-price">$39.00 per seat</div>
+    </div>
+  </div>
+
+  <!-- Summary metric cards -->
+  <div class="summary-grid">
+    <div class="metric-card">
+      <div class="metric-label">Monthly Seat Cost</div>
+      <div class="metric-row">
+        <span><span class="plan-dot business"></span> Business</span>
+        <span id="m-biz-cost">$1,900.00</span>
+      </div>
+      <div class="metric-row">
+        <span><span class="plan-dot enterprise"></span> Enterprise</span>
+        <span id="m-ent-cost">$1,950.00</span>
+      </div>
+      <div class="metric-total">
+        <span>Total</span>
+        <span id="m-total-cost">$3,850.00</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">AI Credits Included / Mo</div>
+      <div class="metric-row">
+        <span><span class="plan-dot business"></span> Business</span>
+        <span id="m-biz-credits">300,000</span>
+      </div>
+      <div class="metric-row">
+        <span><span class="plan-dot enterprise"></span> Enterprise</span>
+        <span id="m-ent-credits">350,000</span>
+      </div>
+      <div class="metric-total">
+        <span>Total</span>
+        <span id="m-total-credits">650,000</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-label">Credit Value @ $0.01 / credit</div>
+      <div class="metric-row">
+        <span><span class="plan-dot business"></span> Business</span>
+        <span id="m-biz-value">$3,000.00</span>
+      </div>
+      <div class="metric-row">
+        <span><span class="plan-dot enterprise"></span> Enterprise</span>
+        <span id="m-ent-value">$3,500.00</span>
+      </div>
+      <div class="metric-total">
+        <span>Total</span>
+        <span id="m-total-value">$6,500.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Value vs Cost analysis table -->
+  <div class="value-panel">
+    <div class="value-panel-header">
+      <h3>Value vs. Cost Analysis</h3>
+      <span style="font-size:12px;color:var(--muted);">Per plan, monthly</span>
+    </div>
+    <table class="value-table">
+      <thead>
+        <tr>
+          <th>Plan</th>
+          <th>Seats</th>
+          <th>Seat Cost</th>
+          <th>Credits Incl.</th>
+          <th>Credit Value</th>
+          <th>Net Value</th>
+          <th>Value / $ Spent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="plan-dot business" style="display:inline-block;margin-right:6px;"></span>Business</td>
+          <td id="t-biz-seats">100</td>
+          <td id="t-biz-cost">$1,900.00</td>
+          <td id="t-biz-credits">300,000</td>
+          <td id="t-biz-value">$3,000.00</td>
+          <td id="t-biz-net" class="positive">+$1,100.00</td>
+          <td id="t-biz-ratio" class="highlight">1.58x</td>
+        </tr>
+        <tr>
+          <td><span class="plan-dot enterprise" style="display:inline-block;margin-right:6px;"></span>Enterprise</td>
+          <td id="t-ent-seats">50</td>
+          <td id="t-ent-cost">$1,950.00</td>
+          <td id="t-ent-credits">350,000</td>
+          <td id="t-ent-value">$3,500.00</td>
+          <td id="t-ent-net" class="positive">+$1,550.00</td>
+          <td id="t-ent-ratio" class="highlight">1.79x</td>
+        </tr>
+        <tr class="total-row">
+          <td>Combined</td>
+          <td id="t-total-seats">150</td>
+          <td id="t-total-cost">$3,850.00</td>
+          <td id="t-total-credits">650,000</td>
+          <td id="t-total-value">$6,500.00</td>
+          <td id="t-total-net" class="positive">+$2,650.00</td>
+          <td id="t-total-ratio" class="highlight">1.69x</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Overage modeler -->
+  <div class="overage-section">
+    <h3>Overage Modeler</h3>
+    <p>If usage exceeds included credits, overages are billed at $0.01 per AI credit.</p>
+    <div class="overage-inputs">
+      <div>
+        <label for="ov-biz">Business Overage Credits</label>
+        <input type="number" id="ov-biz" value="0" min="0" step="1000" />
+      </div>
+      <div>
+        <label for="ov-ent">Enterprise Overage Credits</label>
+        <input type="number" id="ov-ent" value="0" min="0" step="1000" />
+      </div>
+    </div>
+    <div class="overage-result">
+      <div class="overage-stat">
+        <div class="label">Total Overage Credits</div>
+        <div class="val" id="ov-total-credits">0</div>
+      </div>
+      <div class="overage-stat">
+        <div class="label">Overage Cost</div>
+        <div class="val negative" id="ov-total-cost">$0.00</div>
+      </div>
+      <div class="overage-stat">
+        <div class="label">Total Monthly Bill (with overages)</div>
+        <div class="val" id="ov-grand-total">$3,850.00</div>
+      </div>
+      <div class="overage-stat">
+        <div class="label">Effective Cost per Credit</div>
+        <div class="val" id="ov-eff-cost">$0.0059</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-month promo summary -->
+  <div class="three-month">
+    <h3>3-Month Promotional Period Summary</h3>
+    <div class="three-month-grid">
+      <div class="tm-stat">
+        <div class="label">Total Seat Investment</div>
+        <div class="val" id="tm-cost">$11,550.00</div>
+      </div>
+      <div class="tm-stat">
+        <div class="label">Total AI Credits</div>
+        <div class="val" id="tm-credits">1,950,000</div>
+      </div>
+      <div class="tm-stat">
+        <div class="label">Total Credit Value</div>
+        <div class="val" id="tm-value">$19,500.00</div>
+      </div>
+      <div class="tm-stat">
+        <div class="label">Net Value Over 3 Months</div>
+        <div class="val positive" id="tm-net">+$7,950.00</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Promotional pricing: Copilot Business $19/seat, Copilot Enterprise $39/seat. AI credit overage rate $0.01/credit.
+  Values reflect credit purchasing power only and do not include other product capabilities.
+</footer>
+
+<script>
+  const BIZ_PRICE    = 19;
+  const ENT_PRICE    = 39;
+  const BIZ_CREDITS  = 3000;
+  const ENT_CREDITS  = 7000;
+  const CREDIT_VALUE = 0.01;
+
+  const el = id => document.getElementById(id);
+
+  function fmt(n) {
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtInt(n) {
+    return Math.round(n).toLocaleString('en-US');
+  }
+
+  function setNet(id, val) {
+    const node = el(id);
+    node.textContent = (val >= 0 ? '+' : '') + fmt(val);
+    node.className = val >= 0 ? 'positive' : 'negative';
+  }
+
+  function calculate() {
+    const bizSeats = Math.max(0, parseInt(el('biz-seats').value) || 0);
+    const entSeats = Math.max(0, parseInt(el('ent-seats').value) || 0);
+    const ovBiz    = Math.max(0, parseInt(el('ov-biz').value)    || 0);
+    const ovEnt    = Math.max(0, parseInt(el('ov-ent').value)    || 0);
+
+    const bizCost     = bizSeats * BIZ_PRICE;
+    const entCost     = entSeats * ENT_PRICE;
+    const totalCost   = bizCost + entCost;
+
+    const bizCredits    = bizSeats * BIZ_CREDITS;
+    const entCredits    = entSeats * ENT_CREDITS;
+    const totalCredits  = bizCredits + entCredits;
+
+    const bizValue    = bizCredits  * CREDIT_VALUE;
+    const entValue    = entCredits  * CREDIT_VALUE;
+    const totalValue  = totalCredits * CREDIT_VALUE;
+
+    const bizNet   = bizValue  - bizCost;
+    const entNet   = entValue  - entCost;
+    const totalNet = totalValue - totalCost;
+
+    const bizRatio   = bizCost   > 0 ? bizValue   / bizCost   : 0;
+    const entRatio   = entCost   > 0 ? entValue   / entCost   : 0;
+    const totalRatio = totalCost > 0 ? totalValue / totalCost : 0;
+
+    const totalOverage    = ovBiz + ovEnt;
+    const overageCost     = totalOverage * CREDIT_VALUE;
+    const grandTotal      = totalCost + overageCost;
+    const totalAllCredits = totalCredits + totalOverage;
+    const effCost         = totalAllCredits > 0 ? grandTotal / totalAllCredits : 0;
+
+    // Metric cards
+    el('m-biz-cost').textContent    = fmt(bizCost);
+    el('m-ent-cost').textContent    = fmt(entCost);
+    el('m-total-cost').textContent  = fmt(totalCost);
+    el('m-biz-credits').textContent   = fmtInt(bizCredits);
+    el('m-ent-credits').textContent   = fmtInt(entCredits);
+    el('m-total-credits').textContent = fmtInt(totalCredits);
+    el('m-biz-value').textContent   = fmt(bizValue);
+    el('m-ent-value').textContent   = fmt(entValue);
+    el('m-total-value').textContent = fmt(totalValue);
+
+    // Table
+    el('t-biz-seats').textContent    = fmtInt(bizSeats);
+    el('t-ent-seats').textContent    = fmtInt(entSeats);
+    el('t-total-seats').textContent  = fmtInt(bizSeats + entSeats);
+    el('t-biz-cost').textContent     = fmt(bizCost);
+    el('t-ent-cost').textContent     = fmt(entCost);
+    el('t-total-cost').textContent   = fmt(totalCost);
+    el('t-biz-credits').textContent  = fmtInt(bizCredits);
+    el('t-ent-credits').textContent  = fmtInt(entCredits);
+    el('t-total-credits').textContent = fmtInt(totalCredits);
+    el('t-biz-value').textContent    = fmt(bizValue);
+    el('t-ent-value').textContent    = fmt(entValue);
+    el('t-total-value').textContent  = fmt(totalValue);
+    setNet('t-biz-net', bizNet);
+    setNet('t-ent-net', entNet);
+    setNet('t-total-net', totalNet);
+    el('t-biz-ratio').textContent    = bizCost   > 0 ? bizRatio.toFixed(2)   + 'x' : 'N/A';
+    el('t-ent-ratio').textContent    = entCost   > 0 ? entRatio.toFixed(2)   + 'x' : 'N/A';
+    el('t-total-ratio').textContent  = totalCost > 0 ? totalRatio.toFixed(2) + 'x' : 'N/A';
+
+    // Overages
+    el('ov-total-credits').textContent = fmtInt(totalOverage);
+    el('ov-total-cost').textContent    = fmt(overageCost);
+    el('ov-grand-total').textContent   = fmt(grandTotal);
+    el('ov-eff-cost').textContent      = '$' + effCost.toFixed(4);
+
+    // 3-month promo
+    el('tm-cost').textContent    = fmt(totalCost * 3);
+    el('tm-credits').textContent = fmtInt(totalCredits * 3);
+    el('tm-value').textContent   = fmt(totalValue * 3);
+    setNet('tm-net', totalNet * 3);
+  }
+
+  ['biz-seats', 'ent-seats', 'ov-biz', 'ov-ent'].forEach(id => {
+    el(id).addEventListener('input', calculate);
+  });
+
+  calculate();
+</script>
+</body>
+</html>

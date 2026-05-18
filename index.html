@@ -211,7 +211,17 @@
     .tm-stat .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
     .tm-stat .val { font-size: 15px; font-weight: 700; }
 
-    footer { max-width: 960px; margin: 24px auto 0; font-size: 11px; color: var(--muted); text-align: center; }
+    footer {
+      max-width: 960px;
+      margin: 24px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -403,8 +413,7 @@
 </div>
 
 <footer>
-  Promotional pricing: Copilot Business $19/seat, Copilot Enterprise $39/seat. AI credit overage rate $0.01/credit.
-  Values reflect credit purchasing power only and do not include other product capabilities.
+  This is not officially supported by GitHub and was made by Cullen Hennessy.
 </footer>
 
 <script>

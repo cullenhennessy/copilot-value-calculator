@@ -245,7 +245,7 @@
 
     /* ---- Print / PDF styles ---- */
     @media print {
-      @page { size: A4; margin: 16mm 14mm; }
+      @page { size: A4 landscape; margin: 12mm 14mm; }
 
       :root {
         --bg: #fff;
@@ -261,15 +261,15 @@
         --green: #1a7f37;
       }
 
-      body { background: #fff; color: #1f2328; padding: 0; font-size: 11pt; }
+      body { background: #fff; color: #1f2328; padding: 0; font-size: 10pt; }
 
       .export-btn { display: none !important; }
 
-      header { margin-bottom: 16pt; padding-bottom: 12pt; border-color: #d0d7de; }
-      header h1 { font-size: 18pt; }
-      header p { font-size: 10pt; }
+      header { margin-bottom: 12pt; padding-bottom: 10pt; border-color: #d0d7de; }
+      header h1 { font-size: 16pt; }
+      header p { font-size: 9pt; }
 
-      .layout { gap: 14pt; }
+      .layout { gap: 10pt; }
 
       .plan-card, .metric-card, .value-panel, .overage-section, .three-month, footer {
         background: #f6f8fa;
@@ -284,12 +284,14 @@
         background: #eaeef2;
         border-color: #d0d7de;
         color: #1f2328;
-        font-size: 14pt;
+        font-size: 12pt;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
 
+      .value-table th, .value-table td { padding: 7px 10px; font-size: 9.5pt; }
       .value-table tr.total-row td { background: #eaeef2; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
       .overage-stat, .tm-stat { background: #eaeef2; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .three-month { background: #fffbf0; border-color: #d4a017; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
@@ -305,7 +307,7 @@
       .overage-inputs { grid-template-columns: 1fr 1fr; }
       .overage-result { grid-template-columns: 1fr 1fr; }
 
-      footer { margin-top: 14pt; font-size: 9pt; }
+      footer { margin-top: 10pt; font-size: 8.5pt; }
     }
   </style>
 </head>

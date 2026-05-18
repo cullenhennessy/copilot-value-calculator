@@ -222,6 +222,91 @@
       color: var(--muted);
       text-align: center;
     }
+
+    /* ---- Export button ---- */
+    .export-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background .15s, border-color .15s;
+      text-decoration: none;
+    }
+    .export-btn:hover { background: var(--border); border-color: var(--muted); }
+    .export-btn svg { flex-shrink: 0; }
+
+    /* ---- Print / PDF styles ---- */
+    @media print {
+      @page { size: A4; margin: 16mm 14mm; }
+
+      :root {
+        --bg: #fff;
+        --surface: #f6f8fa;
+        --surface2: #eaeef2;
+        --border: #d0d7de;
+        --text: #1f2328;
+        --muted: #57606a;
+        --blue: #0969da;
+        --purple: #6639ba;
+        --gold: #9a6700;
+        --red: #cf222e;
+        --green: #1a7f37;
+      }
+
+      body { background: #fff; color: #1f2328; padding: 0; font-size: 11pt; }
+
+      .export-btn { display: none !important; }
+
+      header { margin-bottom: 16pt; padding-bottom: 12pt; border-color: #d0d7de; }
+      header h1 { font-size: 18pt; }
+      header p { font-size: 10pt; }
+
+      .layout { gap: 14pt; }
+
+      .plan-card, .metric-card, .value-panel, .overage-section, .three-month, footer {
+        background: #f6f8fa;
+        border-color: #d0d7de;
+        break-inside: avoid;
+      }
+
+      .plan-card.business { border-top-color: #0969da; }
+      .plan-card.enterprise { border-top-color: #6639ba; }
+
+      input[type="number"] {
+        background: #eaeef2;
+        border-color: #d0d7de;
+        color: #1f2328;
+        font-size: 14pt;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .value-table tr.total-row td { background: #eaeef2; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .overage-stat, .tm-stat { background: #eaeef2; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .three-month { background: #fffbf0; border-color: #d4a017; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      .positive { color: #1a7f37; }
+      .negative { color: #cf222e; }
+      .highlight { color: #9a6700; }
+      .plan-dot.business { background: #0969da; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .plan-dot.enterprise { background: #6639ba; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      .inputs-row { grid-template-columns: 1fr 1fr; }
+      .summary-grid { grid-template-columns: repeat(3, 1fr); }
+      .three-month-grid { grid-template-columns: repeat(4, 1fr); }
+      .overage-inputs { grid-template-columns: 1fr 1fr; }
+      .overage-result { grid-template-columns: 1fr 1fr; }
+
+      footer { margin-top: 14pt; font-size: 9pt; }
+    }
   </style>
 </head>
 <body>
@@ -230,6 +315,13 @@
   <h1>Copilot Seat Value Calculator</h1>
   <p>Model the cost and credit value of Copilot Business vs Enterprise seat allocations.</p>
   <span class="promo-badge">3-Month Promotional Pricing</span>
+  <br/>
+  <button class="export-btn" onclick="window.print()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M12.5 5H11V3.5A1.5 1.5 0 0 0 9.5 2h-3A1.5 1.5 0 0 0 5 3.5V5H3.5A1.5 1.5 0 0 0 2 6.5v5A1.5 1.5 0 0 0 3.5 13H4v.5A1.5 1.5 0 0 0 5.5 15h5A1.5 1.5 0 0 0 12 13.5V13h.5A1.5 1.5 0 0 0 14 11.5v-5A1.5 1.5 0 0 0 12.5 5ZM6.5 3.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V5h-3V3.5Zm4 10a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5V10h5v3.5Zm1.5-2H12v-.5A1.5 1.5 0 0 0 10.5 9h-5A1.5 1.5 0 0 0 4 10.5V11h-.5a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5Z"/>
+    </svg>
+    Export PDF
+  </button>
 </header>
 
 <div class="layout">
